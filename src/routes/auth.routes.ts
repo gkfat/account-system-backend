@@ -8,7 +8,7 @@ const router = express.Router();
 
 /**
  * @openapi
- * /api/sessions:
+ * /sessions:
  *  post:
  *      tags:
  *          - Session
@@ -31,14 +31,14 @@ const router = express.Router();
  *          
  */
 router.post(
-    '/api/sessions',
+    '/sessions',
     validateResource(createSessionSchema),
     createSessionHandler
 );
 
 /**
  * @openapi
- * /api/sessions/logout:
+ * /sessions/logout:
  *  get:
  *      tags:
  *          - Session
@@ -55,7 +55,7 @@ router.post(
  *
  */
 router.get(
-    '/api/sessions/logout',
+    '/sessions/logout',
     deserializeUser,
     logOutHandler
 )

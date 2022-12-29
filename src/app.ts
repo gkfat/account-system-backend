@@ -25,10 +25,7 @@ app.listen(PORT, () => {
     app.use(cookieParser('accountSystemProject'));
     app.use(deserializeUser);
     app.use(morgan('common'));
-    app.use(cors({
-        origin: ['https://localhost:4200', 'http://localhost:4200'],
-        credentials: true
-    }));
+    app.use(cors());
     app.use(router);
 
     logger.info(`Server running on http://localhost:${PORT}`)

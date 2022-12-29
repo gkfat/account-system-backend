@@ -6,7 +6,7 @@ const router = express.Router();
 
 /**
  * @openapi
- * /api/healthcheck:
+ * /healthcheck:
  *   get:
  *      tags:
  *          - Healthcheck
@@ -15,7 +15,7 @@ const router = express.Router();
  *          200:
  *              description: App is up and running
  */
-router.get('/api/healthcheck', (req: Request, res: Response) => res.sendStatus(200));
+router.get('/healthcheck', (req: Request, res: Response) => res.sendStatus(200));
 
 router.use(user);
 router.use(auth);

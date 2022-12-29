@@ -23,7 +23,7 @@ const router = express.Router();
 
 /**
  * @openapi
- * /api/users:
+ * /users:
  *  post:
  *      tags:
  *          - User
@@ -46,14 +46,14 @@ const router = express.Router();
  *          
  */
 router.post(
-    '/api/users',
+    '/users',
     validateResource(createUserSchema),
     createUserHandler
 );
 
 /**
  * @openapi
- * /api/users/fetch:
+ * /users/fetch:
  *  post:
  *      tags:
  *          - User
@@ -75,7 +75,7 @@ router.post(
  *              description: Bad request
  */
 router.post(
-    '/api/users/fetch',
+    '/users/fetch',
     requireUser,
     validateResource(fetchUsersSchema),
     fetchUsersHandler
@@ -83,7 +83,7 @@ router.post(
 
 /**
  * @openapi
- * /api/users/verify/{id}/{verificationCode}:
+ * /users/verify/{id}/{verificationCode}:
  *  get:
  *      tags:
  *          - User
@@ -111,14 +111,14 @@ router.post(
  *          
  */
 router.get(
-    '/api/users/verify/:id/:verificationCode',
+    '/users/verify/:id/:verificationCode',
     validateResource(verifyUserSchema),
     verifyUserHandler
 );
 
 /**
  * @openapi
- * /api/users/resendVerify:
+ * /users/resendVerify:
  *  post:
  *      tags:
  *          - User
@@ -141,14 +141,14 @@ router.get(
  *          
  */
 router.post(
-    '/api/users/resendVerify',
+    '/users/resendVerify',
     validateResource(resendVerifySchema),
     resendVerifyHandler
 );
 
 /**
  * @openapi
- * /api/users/me:
+ * /users/me:
  *  get:
  *      tags:
  *          - User
@@ -167,14 +167,14 @@ router.post(
  *          
  */
 router.get(
-    '/api/users/me',
+    '/users/me',
     requireUser,
     getCurrentUserHandler
 );
 
 /**
  * @openapi
- * /api/users/me:
+ * /users/me:
  *  put:
  *      tags:
  *          - User
@@ -197,7 +197,7 @@ router.get(
  *          
  */
 router.put(
-    '/api/users/me',
+    '/users/me',
     requireUser,
     validateResource(updateUserSchema),
     updateUserHandler
@@ -205,7 +205,7 @@ router.put(
 
 /**
  * @openapi
- * /api/users/resetPassword:
+ * /users/resetPassword:
  *  post:
  *      tags:
  *          - User
@@ -228,7 +228,7 @@ router.put(
  *          
  */
 router.post(
-    '/api/users/resetPassword',
+    '/users/resetPassword',
     requireUser,
     validateResource(resetPasswordSchema),
     resetPasswordHandler
