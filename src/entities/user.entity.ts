@@ -4,8 +4,7 @@ import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, Index, CreateDateCo
 export const privateFields = [
     'password',
     'resetPasswordCode',
-    'verificationCode',
-    'verified'
+    'verificationCode'
 ];
 
 @Entity()

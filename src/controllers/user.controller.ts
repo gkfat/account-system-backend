@@ -26,12 +26,20 @@ async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Res
 
     let createdUser!: User;
 
+    const checkUserExist = await userService.findUserByEmail(email);
+    if (checkUserExist) {
+        return res.status(409).send({
+            message: 'Invalid email.',
+            data: ''
+        });
+    }
+
     // If not sign up by social, then must verify password format
     if (!socialSignUp) {
         const passwordRule = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         const validPassword = new RegExp(passwordRule).test(password);
         if (!validPassword) {
-            res.send({
+            return res.status(400).send({
                 message: 'Password must contains at least one lower character, one upper character, one digit character, one special character, and at least 8 characters.',
                 data: ''
             })
