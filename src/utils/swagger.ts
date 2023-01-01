@@ -9,9 +9,9 @@ function swaggerDocs(app: Express, PORT: string) {
         definition: {
             openapi: '3.0.0',
             info: {
-                title: 'Account system API',
+                title: 'Account System API',
                 version: '1.0.0',
-                description: 'blah blah blah'
+                description: 'API documents about Account System'
             },
             components: {
                 securitySchemas: {
