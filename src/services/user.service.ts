@@ -52,7 +52,7 @@ export default class UserService {
     }
 
     public async sendVerifyMail(user: User): Promise<boolean> {
-        const domain = config.get<string>('domain');
+        const domain = config.get<string>('redirect_uri');
         const verifyLink = `${domain}/verify?id=${user.id}&verificationCode=${user.verificationCode}`;
         logger.info(`Verify mail send to user id: ${user.id}, name: ${user.firstName} ${user.lastName}, verifyLink: ${verifyLink}`);
         // const payload: AWS.SES.SendEmailRequest = {
