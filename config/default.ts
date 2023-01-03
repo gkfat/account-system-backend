@@ -6,7 +6,7 @@ dotenv.config();
 export default {
     ip: process.env.IP,
     port: process.env.PORT,
-    domain: process.env.DOMAIN,
+    domain: process.env.REDIRECT_URI,
     db: {
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
