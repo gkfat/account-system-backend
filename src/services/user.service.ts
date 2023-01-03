@@ -1,3 +1,4 @@
+import { SendMailOptions } from 'nodemailer';
 import { privateFields } from '../entities/user.entity';
 import argon2 from 'argon2';
 import sendEmail from '../utils/mailer';
@@ -54,7 +55,28 @@ export default class UserService {
         const domain = config.get<string>('domain');
         const verifyLink = `${domain}/verify?id=${user.id}&verificationCode=${user.verificationCode}`;
         logger.info(`Verify mail send to user id: ${user.id}, name: ${user.firstName} ${user.lastName}, verifyLink: ${verifyLink}`);
-        return await sendEmail({
+        // const payload: AWS.SES.SendEmailRequest = {
+        //     Source: config.get('smtp.sender'),
+        //     Destination: {
+        //         ToAddresses: [user.email]
+        //     },
+        //     Message: {
+        //         Body: {
+        //             Html: {
+        //                 Data: `
+        //                 <p>Dear ${user.firstName} ${user.lastName}</p>
+        //                 <p>Please click the link to verify your account:
+        //                     <a href="${verifyLink}">${verifyLink}</a>
+        //                 </p>
+        //                 `
+        //             }
+        //         },
+        //         Subject: {
+        //             Data: 'Please verify your account'
+        //         }
+        //     }
+        // }
+        const payload: SendMailOptions = {
             from: config.get('smtp.sender'),
             to: user.email,
             subject: 'Please verify your account',
@@ -64,7 +86,8 @@ export default class UserService {
                 <a href="${verifyLink}">${verifyLink}</a>
             </p>
             `
-        });
+        }
+        return await sendEmail(payload);
     }
 
     public async validatePassword(user: User, candidatePassword: string): Promise<boolean> {
