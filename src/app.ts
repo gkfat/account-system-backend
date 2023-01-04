@@ -9,6 +9,8 @@ import swaggerDocs from './utils/swagger';
 import deserializeUser from './middleware/deserializeUser';
 import db from './utils/connectToDb';
 
+import UserService from './services/user.service';
+
 // Init express app
 const app: Express = express();
 

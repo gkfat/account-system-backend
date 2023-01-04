@@ -21,21 +21,27 @@ async function createSessionHandler(req: Request<{}, {}, CreateSessionInput>, re
         });
     }
 
-    if (!user.verified) {
-        return res.status(401).send({
-            message: 'Please verify your email',
-            data: ''
-        });
-    }
-
     // If socialLogin === false, then log user with password
     if (!socialLogin) {
+        // Check user verified
+        if (!user.verified) {
+            return res.status(401).send({
+                message: 'Please verify your email',
+                data: ''
+            });
+        }
         const isValid = await userService.validatePassword(user, password);
         if (!isValid) {
             return res.status(400).send({
                 message: message,
                 data: ''
             });
+        }
+    } else {
+        // If Social Login, but email not verified, then directly verify user
+        if (!user.verified) {
+            user.verified = true;
+            await userService.saveUser(user);
         }
     }
 

@@ -48,7 +48,7 @@ export default class UserService {
     }
 
     public createVerificationCode(): string {
-        return crypto.randomBytes(6).toString('base64');
+        return crypto.randomBytes(6).toString('hex');
     }
 
     public async sendVerifyMail(user: User): Promise<boolean> {
