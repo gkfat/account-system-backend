@@ -32,7 +32,8 @@ class ConnectToDb {
             logger.info('Connected to DB successfully!');
             this.dataSource = dataSource;
         }).catch(err => {
-            logger.error('Error connecting to DB', err);
+            logger.error('Error connecting to DB');
+            logger.error(err);
             process.exit(1);
         });
     }
