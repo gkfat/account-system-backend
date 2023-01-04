@@ -171,25 +171,30 @@ async function resetPasswordHandler(req: Request<{}, {}, ResetPasswordInput>, re
     const { id, oldPassword, newPassword, newPasswordConfirm } = req.body;
     const findUser = await userService.findUserById(id);
 
-    if ( !findUser )  {
+    if (!findUser)  {
         return res.status(404).send(`User id: ${id} not created`);
     }
 
-    if ( !findUser.verified ) {
-        return res.status(200).send(`User id: ${id} not verified`);
+    if (!findUser.verified) {
+        return res.status(400).send(`User id: ${id} not verified`);
+    }
+
+    const verifyOldPassword = await userService.hashPassword(oldPassword) === findUser.password;
+    if (!verifyOldPassword) {
+        return res.status(400).send(`Invalid old password`);
     }
 
     findUser.password = await userService.hashPassword(newPassword);
     await userService.saveUser(findUser);
 
     const findSession = await authService.findSessionByUser(id);
-    if ( findSession ) {
+    if (findSession) {
         findSession.accessToken = '';
         await authService.saveSession(findSession);
         res.locals.user = null;
     }
 
-    return res.send({
+    return res.clearCookie('accessToken').status(200).send({
         data: '',
         message: 'Reset password success! Please login with new password.'
     });
