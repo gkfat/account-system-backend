@@ -8,7 +8,7 @@ class ConnectToDb {
     public dataSource!: DataSource;
     // Private config
     private appDataSource = new DataSource({
-        type: 'mariadb',
+        type: 'mysql',
         host: config.get<string>('db.host'),
         database: config.get<string>('db.database'),
         port: config.get<number>('db.port'),

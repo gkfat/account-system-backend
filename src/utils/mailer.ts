@@ -1,6 +1,6 @@
 import config from 'config';
 import nodemailer, { SendMailOptions, Transporter } from 'nodemailer';
-import AWS from 'aws-sdk';
+// import AWS from 'aws-sdk';
 import logger from './logger';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 

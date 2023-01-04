@@ -6,7 +6,6 @@ import cors from 'cors';
 import router from './routes';
 import logger from './utils/logger';
 import swaggerDocs from './utils/swagger';
-import ConnectToDb from './utils/connectToDb';
 import deserializeUser from './middleware/deserializeUser';
 import db from './utils/connectToDb';
 
