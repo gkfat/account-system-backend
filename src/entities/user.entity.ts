@@ -24,16 +24,16 @@ export class User extends BaseEntity {
     @DeleteDateColumn({ nullable: true })
     deletedAt: Date | null = null;
 
-    @Column()
+    @Column({ length: 100 })
     firstName!: string;
 
-    @Column()
+    @Column({ length: 100 })
     lastName!: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, length: 100 })
     password!: string;
 
-    @Column()
+    @Column({ length: 150 })
     verificationCode!: string;
 
     @Column({ default: false })
@@ -42,7 +42,7 @@ export class User extends BaseEntity {
     @Column()
     loggedInTimes!: number;
 
-    @Column()
+    @Column({ length: 100 })
     email!: string;
 
     @OneToMany((type) => User, user => user.id )
