@@ -58,7 +58,7 @@ export enum EnumVerifyState {
  *              lastName:
  *                  type: string
  */
-const passwordRule = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+export const passwordRule = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_+]).{8,}$/;
 
 export const createUserSchema = object({
     body: object({

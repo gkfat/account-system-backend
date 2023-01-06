@@ -5,7 +5,8 @@ import {
     ResetPasswordInput,
     UpdateUserInput,
     ResendVerifyInput,
-    EnumVerifyState
+    EnumVerifyState,
+    passwordRule
 } from '../schemas/user.schema';
 import { Request, Response } from 'express';
 import { User } from '../entities/user.entity';
@@ -36,7 +37,6 @@ async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Res
 
     // If not sign up by social, then must verify password format
     if (!socialSignUp) {
-        const passwordRule = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         const validPassword = new RegExp(passwordRule).test(password);
         if (!validPassword) {
             return res.status(400).send({
