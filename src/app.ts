@@ -1,15 +1,13 @@
 import config from 'config';
 import express, { Express } from 'express';
 import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import router from './routes';
 import logger from './utils/logger';
 import swaggerDocs from './utils/swagger';
-import deserializeUser from './middleware/deserializeUser';
 import db from './utils/connectToDb';
-
-import UserService from './services/user.service';
+import authenticateToken from './middleware/authenticateToken';
+import cookieParser from 'cookie-parser';
 
 // Init express app
 const app: Express = express();
@@ -22,9 +20,9 @@ app.listen(PORT, () => {
     db.init();
 
     // API config
-    app.use(express.json());
-    app.use(cookieParser('accountSystemProject'));
-    app.use(deserializeUser);
+    app.use(express.json({ limit: '50mb' }));
+    app.use(cookieParser('GKProject'));
+    app.use(authenticateToken);
     app.use(morgan('common'));
     app.use(cors());
     app.use(router);

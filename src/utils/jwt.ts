@@ -1,26 +1,41 @@
-import jwt from 'jsonwebtoken';
+import { User } from './../entities/user.entity';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from 'config';
 
-function signJwt(object: Object, keyName: 'accessTokenPrivateKey', options?: jwt.SignOptions | undefined) {
-    const signInKey = Buffer.from(config.get<string>(keyName), 'base64').toString();
-    return jwt.sign(object, signInKey, {
-        ...(options && options),
-        algorithm: 'RS256'
-    });
+function generateToken(payload: Object, keyName: 'accessTokenSecret' | 'refreshTokenSecret'): string {
+    const tokenSecret = config.get<{
+        key: string;
+        expires: string;
+    }>(keyName);
+    // Never expired
+    const expiresIn = tokenSecret.expires;
+    return jwt.sign(payload, tokenSecret.key);
 }
 
-function verifyJwt<T>(token: string, keyName: 'accessTokenPublicKey'): T | null {
-    const publicKey = Buffer.from(config.get<string>(keyName), 'base64').toString();
+function verifyToken(token: string, keyName: 'accessTokenSecret' | 'refreshTokenSecret'): {
+    payload: User | null,
+    expired: boolean
+} {
+    const tokenSecret = config.get<{
+        key: string;
+        expires: string;
+    }>(keyName);
+
     try {
-        // Return user data
-        const decoded = jwt.verify(token, publicKey) as T;
-        return decoded;
-    } catch (err) {
-        return null;
+        const decoded = jwt.verify(token, tokenSecret.key) as any;
+        return {
+            payload: decoded,
+            expired: false
+        };
+    } catch (err: any) {
+        return {
+            payload: null,
+            expired: true
+        }
     }
 }
 
 export {
-    signJwt,
-    verifyJwt
+    generateToken,
+    verifyToken
 }

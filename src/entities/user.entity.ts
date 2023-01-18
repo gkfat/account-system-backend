@@ -1,5 +1,6 @@
 import { Session } from './session.entity';
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, Index, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany, Unique } from 'typeorm';
+import { EntitySchema, EntitySchemaRelationOptions } from 'typeorm';
+import { BaseSchema } from './base.entity';
 
 export const privateFields = [
     'password',
@@ -7,44 +8,93 @@ export const privateFields = [
     'verificationCode'
 ];
 
-@Entity()
-@Unique('unique_email', ['email', 'deletedAt'])
-export class User extends BaseEntity {
+export class User {
     [key: string]: any;
-
-    @PrimaryGeneratedColumn()
-    id!: number;
-
-    @CreateDateColumn()
-    createdAt!: Date;
-
-    @UpdateDateColumn({ nullable: true })
-    updatedAt: Date | null = null;
-
-    @DeleteDateColumn({ nullable: true })
-    deletedAt: Date | null = null;
-
-    @Column({ length: 100 })
-    firstName!: string;
-
-    @Column({ length: 100 })
-    lastName!: string;
-
-    @Column({ nullable: true, length: 100 })
-    password!: string;
-
-    @Column({ length: 150 })
-    verificationCode!: string;
-
-    @Column({ default: false })
-    verified!: boolean;
-
-    @Column()
-    loggedInTimes!: number;
-
-    @Column({ length: 100 })
+    
     email!: string;
-
-    @OneToMany((type) => User, user => user.id )
+    roleLevel!: number;
+    firstName!: string | null;
+    lastName!: string | null;
+    nickName!: string;
+    level!: number;
+    experience!: number;
+    avatarId!: number;
+    frameId!: number;
+    password!: string | null;
+    verificationCode!: string | null;
+    verified!: boolean;
     sessions!: Session[];
 }
+
+export const UserEntity = new EntitySchema<User>({
+    name: 'User',
+    columns: {
+        ...BaseSchema,
+        email: {
+            type: 'varchar',
+            length: 100
+        },
+        firstName: {
+            type: 'varchar',
+            length: 100,
+            nullable: true
+        },
+        lastName: {
+            type: 'varchar',
+            length: 100,
+            nullable: true
+        },
+        nickName: {
+            type: 'varchar',
+            length: 100,
+            nullable: true
+        },
+        roleLevel: {
+            type: 'int',
+            default: 0
+        },
+        level: {
+            type: 'int',
+            default: 1
+        },
+        experience: {
+            type: 'int',
+            default: 0
+        },
+        avatarId: {
+            type: 'int',
+            default: 0
+        },
+        frameId: {
+            type: 'int',
+            default: 0
+        },
+        password: {
+            type: 'varchar',
+            length: 100,
+            nullable: true
+        },
+        verificationCode: {
+            type: 'longtext',
+            nullable: true
+        },
+        verified: {
+            type: 'boolean',
+            default: false
+        }
+    },
+    relations: {
+        sessions: {
+            target: 'Session',
+            type: 'one-to-many',
+            inverseSide: 'User'
+        },
+    },
+    indices: [
+        {
+            name: 'unique_email',
+            unique: true,
+            columns: ['email', 'deletedAt']
+        }
+    ]
+})

@@ -1,44 +1,44 @@
-import { createSessionSchema } from '../schemas/auth.schema';
+import { logInSchema } from '../schemas/auth.schema';
 import express from 'express';
 import validateResource from '../middleware/validateResource';
-import { createSessionHandler, logOutHandler } from '../controllers/auth.controller';
-import deserializeUser from '../middleware/deserializeUser';
+import { logInHandler, logOutHandler } from '../controllers/auth.controller';
+import requireUser from '../middleware/requireUser';
 
 const router = express.Router();
 
 /**
  * @openapi
- * /sessions:
+ * /sessions/logIn:
  *  post:
  *      tags:
  *          - Session
- *      summary: Login and get token
+ *      summary: Log in and get token
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/CreateSessionInput'
+ *                      $ref: '#/components/schemas/logInInput'
  *      responses:
  *          200:
  *              description: Success
  *              content:
  *                  application/json:
  *                      schema:
- *                          $ref: '#/components/schemas/CreateSessionResponse'
+ *                          $ref: '#/components/schemas/logInResponse'
  *          400:
  *              description: Bad request
  *          
  */
 router.post(
-    '/sessions',
-    validateResource(createSessionSchema),
-    createSessionHandler
+    '/sessions/logIn',
+    validateResource(logInSchema),
+    logInHandler
 );
 
 /**
  * @openapi
- * /sessions/logout:
+ * /sessions/logOut:
  *  get:
  *      tags:
  *          - Session
@@ -55,8 +55,8 @@ router.post(
  *
  */
 router.get(
-    '/sessions/logout',
-    deserializeUser,
+    '/sessions/logOut',
+    requireUser,
     logOutHandler
 )
 

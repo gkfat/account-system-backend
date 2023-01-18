@@ -1,8 +1,10 @@
+import { DecoratorEntity } from './../entities/decorator.entity';
+import { PostEntity } from './../entities/post.entity';
+import { SessionEntity } from './../entities/session.entity';
+import { UserEntity } from './../entities/user.entity';
 import config from 'config';
 import logger from './logger';
 import { DataSource } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { Session } from '../entities/session.entity';
 
 class ConnectToDb {
     public dataSource!: DataSource;
@@ -18,8 +20,10 @@ class ConnectToDb {
         logging: false,
         poolSize: 20,
         entities: [
-            User,
-            Session
+            UserEntity,
+            SessionEntity,
+            PostEntity,
+            DecoratorEntity
         ],
         extra: {
             connectionLimit: 10

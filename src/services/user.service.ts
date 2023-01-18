@@ -1,5 +1,6 @@
+import { SessionEntity } from './../entities/session.entity';
 import { SendMailOptions } from 'nodemailer';
-import { privateFields } from '../entities/user.entity';
+import { privateFields, UserEntity } from '../entities/user.entity';
 import argon2 from 'argon2';
 import sendEmail from '../utils/mailer';
 import logger from '../utils/logger';
@@ -21,12 +22,6 @@ export type FetchUsersQuery = {
 }
 
 export type FetchUsersResult = {
-    users: FindUsersResult,
-    activeUsersToday: FindUsersResult,
-    averageUsersLast7Days: FindUsersResult
-}
-
-export type FindUsersResult = {
     data: User[];
     count: number;
 }
@@ -47,7 +42,7 @@ export default class UserService {
         return result;
     }
 
-    public createVerificationCode(): string {
+    public generateVerificationCode(): string {
         return crypto.randomBytes(6).toString('hex');
     }
 
@@ -91,77 +86,48 @@ export default class UserService {
     }
 
     public async validatePassword(user: User, candidatePassword: string): Promise<boolean> {
-        return await argon2.verify(user.password, candidatePassword);
+        return await argon2.verify(user.password!, candidatePassword);
     }
 
     public async saveUser(user: User): Promise<User> {
-        return await User.save(user);
+        const dataSource = db.getDataSource();
+        return await dataSource.getRepository<User>(UserEntity).save(user);
     }
 
     public async findUserById(id: number): Promise<User | null> {
-        return await User.findOneBy({ id: id });
+        const dataSource = db.getDataSource();
+        return await dataSource.getRepository<User>(UserEntity).findOneBy({
+            id: id
+        });
     }
 
     public async findUserByEmail(email: string): Promise<User | null> {
-        return await User.findOneBy({ email: email });
+        const dataSource = db.getDataSource();
+        return await dataSource.getRepository<User>(UserEntity).findOneBy({
+            email: email
+        });
     }
 
-    public async findUsers(query: FetchUsersQuery): Promise<FindUsersResult> {
+    public async findUsers(query: FetchUsersQuery): Promise<FetchUsersResult> {
         const take = query.take || 15;
         const page = query.page || 1;
         const skip = (page-1) * take;
         const dataSource = db.getDataSource();
+        let where: object[] = [];
+        where = query.ids.length > 0 ? [...where, { id: query.ids }] : where;
 
-        const queryResult = await dataSource.createQueryBuilder(User, 'user')
-                                    .leftJoinAndSelect('session', 'session', 'session.userId = user.id')
+        const queryResult = await dataSource.createQueryBuilder(UserEntity, 'user')
                                     .take(take)
                                     .skip(skip)
+                                    .where(where)
                                     .orderBy(`user.${query.order.by}`, query.order.order === 1 ? 'ASC' : 'DESC')
                                     .getManyAndCount();
-        queryResult[0].forEach((user, i) => {
-            dataSource.createQueryBuilder(Session, 'session')
-                .where('session.userId = :id', { id: user.id })
-                .getMany().then(sessions => {
-                    user.sessions = sessions;
-                    queryResult[0][i] = this.omitPrivateField(user);
-                });
-        })
+
+        // Omit user's private fields
+        queryResult[0].map(user => this.omitPrivateField(user));
+
         return {
             data: queryResult[0],
-            count: queryResult[1]
-        }
-    }
-
-    public async findActiveUsersToday(): Promise<FindUsersResult> {
-        const startDate = new Date();
-        const d1 = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-        const endDate = new Date();
-        endDate.setTime(new Date().getTime() + (1 * 24 * 60 * 60 * 1000));
-        const d2 = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-
-        const dataSource = db.getDataSource();
-        const queryResult = await dataSource.createQueryBuilder(User, 'user')
-                                    .leftJoinAndSelect('session', 'session', 'session.userId = user.id')
-                                    .where('session.accessToken != :s', { s: '' })
-                                    .andWhere('session.lastLoggedIn >= :d1 AND session.lastLoggedIn <= :d2', { d1: d1, d2: d2 })
-                                    .getManyAndCount()
-        return {
-            data: queryResult[0].map(user => this.omitPrivateField(user)),
-            count: queryResult[1]
-        }
-    }
-
-    public async findAverageUsersLast7Days(): Promise<FindUsersResult> {
-        const today = new Date();
-        const startDate = new Date().setTime(today.getTime() - (7 * 24 * 60 * 60 * 1000));
-
-        const dataSource = db.getDataSource();
-        const queryResult = await dataSource.createQueryBuilder(User, 'user')
-                                    .leftJoinAndSelect('session', 'session', 'session.userId = user.id')
-                                    .where('session.lastLoggedIn >= :d', { d: startDate })
-                                    .getManyAndCount()
-        return {
-            data: queryResult[0].map(user => this.omitPrivateField(user)),
             count: queryResult[1]
         }
     }

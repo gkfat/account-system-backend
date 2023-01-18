@@ -168,7 +168,6 @@ router.post(
  */
 router.get(
     '/users/me',
-    requireUser,
     getCurrentUserHandler
 );
 

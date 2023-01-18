@@ -58,7 +58,8 @@ export enum EnumVerifyState {
  *              lastName:
  *                  type: string
  */
-export const passwordRule = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_+]).{8,}$/;
+// export const passwordRule = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_+]).{8,}$/;
+export const passwordRule = /^(?=.*?[a-z]|[A-Z])(?=.*?[0-9]).{8,}$/;
 
 export const createUserSchema = object({
     body: object({
@@ -68,6 +69,7 @@ export const createUserSchema = object({
         lastName: string({
             required_error: 'Last name is required'
         }),
+        nickName: string(),
         password: string(),
         passwordConfirm: string(),
         email: string({
@@ -117,20 +119,6 @@ export const createUserSchema = object({
  *          type: object
  *          properties:
  *             users:
- *                 type: object
- *                 properties:
- *                     data:
- *                         type: array
- *                     count:
- *                         type: number
- *             activeUsersToday:
- *                 type: object
- *                 properties:
- *                     data:
- *                         type: array
- *                     count:
- *                         type: number
- *             averageUsersLast7Days:
  *                 type: object
  *                 properties:
  *                     data:
@@ -207,26 +195,17 @@ export const resendVerifySchema = object({
  *      UpdateUserResponse:
  *          type: object
  *          properties:
- *              id:
- *                  type: number
- *              createdAt:
- *                  type: string
- *              updatedAt:
- *                  type: string
- *              deletedAt:
- *                  type: string
- *              email:
- *                  type: string
- *              firstName:
- *                  type: string
- *              lastName:
+ *              accessToken:
  *                  type: string
  */
 export const updateUserSchema = object({
     body: object({
         id: number(),
         firstName: string(),
-        lastName: string()
+        lastName: string(),
+        nickName: string(),
+        avatarId: number(),
+        frameId: number()
     })
 });
 

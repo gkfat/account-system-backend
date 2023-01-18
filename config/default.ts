@@ -24,6 +24,12 @@ export default {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
     },
-    accessTokenPrivateKey: process.env.ACCESS_TOKEN_PRIVATE_KEY,
-    accessTokenPublicKey: process.env.ACCESS_TOKEN_PUBLIC_KEY
+    accessTokenSecret: {
+        key: process.env.ACCESS_TOKEN_SECRET_KEY,
+        expires: process.env.ACCESS_TOKEN_EXPIRES_TIME
+    },
+    refreshTokenSecret: {
+        key: process.env.REFRESH_TOKEN_SECRET_KEY,
+        expires: process.env.REFRESH_TOKEN_EXPIRES_TIME
+    },
 };

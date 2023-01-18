@@ -13,15 +13,16 @@ import { User } from '../entities/user.entity';
 import UserService, { FetchUsersQuery, FetchUsersResult }  from '../services/user.service';
 import logger from '../utils/logger';
 import AuthService from '../services/auth.service';
+import { verifyToken } from '../utils/jwt';
 
 async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Response) {
     const userService = new UserService();
     const { email, firstName, lastName, password, socialSignUp } = req.body;
-    let newUser = new User();
+    const newUser = new User();
     newUser.email = email;
     newUser.firstName = firstName;
     newUser.lastName = lastName;
-    newUser.verificationCode = userService.createVerificationCode();
+    newUser.verificationCode = userService.generateVerificationCode();
     newUser.verified = false;
     newUser.loggedInTimes = 0;
 
@@ -40,7 +41,7 @@ async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Res
         const validPassword = new RegExp(passwordRule).test(password);
         if (!validPassword) {
             return res.status(400).send({
-                message: 'Password must contains at least one lower character, one upper character, one digit character, one special character, and at least 8 characters.',
+                message: 'Password must contains at least one character, one digit character, and at least 8 characters.',
                 data: ''
             })
         }
@@ -100,7 +101,7 @@ async function verifyUserHandler(req: Request<VerifyUserInput>, res: Response) {
 
     if (findUser.verificationCode === verificationCode) {
         findUser.verified = true;
-        await findUser.save();
+        await userService.saveUser(findUser);
         return res.send({
             data: {
                 verifyState: EnumVerifyState.SuccessfullyVerified
@@ -152,13 +153,7 @@ async function resendVerifyHandler(req: Request<{}, {}, ResendVerifyInput>, res:
 async function fetchUsersHandler(req: Request<{}, {}, FetchUsersInput>, res: Response) {
     const userService = new UserService();
     const query: FetchUsersQuery = req.body;
-
-    // Compose result
-    const result: FetchUsersResult = {
-        users: await userService.findUsers(query),
-        activeUsersToday: await userService.findActiveUsersToday(),
-        averageUsersLast7Days: await userService.findAverageUsersLast7Days()
-    };
+    const result: FetchUsersResult = await userService.findUsers(query);
     return res.send({
         message: '',
         data: result
@@ -189,12 +184,11 @@ async function resetPasswordHandler(req: Request<{}, {}, ResetPasswordInput>, re
 
     const findSession = await authService.findSessionByUser(id);
     if (findSession) {
-        findSession.accessToken = '';
-        await authService.saveSession(findSession);
+        authService.revokeSession(findSession);
         res.locals.user = null;
     }
 
-    return res.clearCookie('accessToken').status(200).send({
+    return res.status(200).send({
         data: '',
         message: 'Reset password success! Please login with new password.'
     });
@@ -203,27 +197,43 @@ async function resetPasswordHandler(req: Request<{}, {}, ResetPasswordInput>, re
 async function updateUserHandler(req: Request<{}, {}, UpdateUserInput>, res: Response) {
     const userService = new UserService();
     const authService = new AuthService();
-    const { id, firstName, lastName } = req.body;
+    const { id, firstName, lastName, nickName, avatarId, frameId } = req.body;
     const findUser = await userService.findUserById(id);
 
     if ( !findUser )  {
-        return res.status(404).send(`User id: ${id} not created`);
+        return res.status(404).send({
+            data: null,
+            message: 'User not existed'
+        });
     }
 
     if ( !findUser.verified ) {
-        return res.status(200).send(`User id: ${id} not verified`);
+        return res.status(403).send({
+            data: null,
+            message: 'User not verified'
+        });
     }
+
+    // TODO: Check if user has avatarId or frameId permission
+    // if ( findUser.avatarId !== avatarId || findUser.frameId !== frameId ) {
+    //     return res.status(400).send({
+    //         data: null,
+    //         message: 'No avatar or frame permission'
+    //     });
+    // }
 
     findUser.firstName = firstName;
     findUser.lastName = lastName;
+    findUser.nickName = nickName;
+    findUser.avatarId = avatarId;
+    findUser.frameId = frameId;
     const updatedUser = await userService.saveUser(findUser);
-    const result = userService.omitPrivateField(updatedUser);
-    const accessToken = await authService.signAccessToken(result);
 
-    res.locals.user = result;
+    // Sign a new token with updated user data
+    const { accessToken } = await authService.signAccessToken(updatedUser);
 
     return res.send({
-        message: '',
+        message: 'Update user success!',
         data: {
             accessToken
         }
@@ -231,9 +241,10 @@ async function updateUserHandler(req: Request<{}, {}, UpdateUserInput>, res: Res
 }
 
 async function getCurrentUserHandler(req: Request, res: Response) {
+    const user = res.locals.user || null;
     return res.send({
         message: '',
-        data: res.locals.user
+        data: user
     });
 }
 

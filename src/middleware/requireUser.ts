@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyJwt } from '../utils/jwt';
 
 async function requireUser(req: Request, res: Response, next: NextFunction) {
-    const user = res.locals.user;
-
-    if (!user) {
+    if (!res.locals.user) {
         return res.sendStatus(403);
     }
     return next();

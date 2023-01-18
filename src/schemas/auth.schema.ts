@@ -16,7 +16,7 @@ import { object, string, number, TypeOf, array, boolean } from 'zod';
  * @openapi
  * components:
  *  schemas:
- *      CreateSessionInput:
+ *      logInInput:
  *          type: object
  *          required:
  *              - email
@@ -32,15 +32,16 @@ import { object, string, number, TypeOf, array, boolean } from 'zod';
  *              socialLogin:
  *                  type: boolean
  *                  default: false
- *      CreateSessionResponse:
+ *      logInResponse:
  *          type: object
  *          properties:
  *              accessToken:
  *                  type: string
+ *              refreshToken:
+ *                  type: string
  */
-const passwordRule = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 
-export const createSessionSchema = object({
+export const logInSchema = object({
     body: object({
         email: string({
             required_error: 'Email is required'
@@ -56,4 +57,4 @@ export const createSessionSchema = object({
     })
 });
 
-export type CreateSessionInput = TypeOf<typeof createSessionSchema>['body'];
+export type logInInput = TypeOf<typeof logInSchema>['body'];

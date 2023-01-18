@@ -1,47 +1,54 @@
+import { JwtPayload } from 'jsonwebtoken';
 import { privateFields } from '../entities/user.entity';
-import { Session } from '../entities/session.entity';
+import { Session, SessionEntity } from '../entities/session.entity';
 import { User } from '../entities/user.entity';
-import ConnectToDb from '../utils/connectToDb';
-import { signJwt } from '../utils/jwt';
+import { generateToken, verifyToken } from '../utils/jwt';
 import { omit } from 'lodash';
-import UserService from './user.service';
+import db from '../utils/connectToDb';
 
 export default class AuthService {
 
-    public async signAccessToken(user: User): Promise<string> {
-        const payload = omit(user, privateFields);
-        const accessToken = signJwt(
-            payload, 'accessTokenPrivateKey', {
-            expiresIn: '3d'
-        });
-        
-        // If no session then create one, if exist session then refresh access token
-        const existSession = await this.findSessionByUser(user.id);
-
-        if (!existSession) {
-            const newSession = new Session();
-            newSession.user = user;
-            newSession.accessToken = accessToken;
-            newSession.lastLoggedIn = new Date();
-            await this.saveSession(newSession);
-        } else {
-            existSession.accessToken = accessToken;
-            existSession.lastLoggedIn = new Date();
-            await this.saveSession(existSession);
-        }
-        return accessToken;
+    public async signAccessToken(user: User): Promise<{ accessToken: string }> {
+        const omitUser = omit(user, privateFields);
+        const accessToken = generateToken(omitUser, 'accessTokenSecret');
+        return {
+            accessToken
+        };
     }
 
+    // public async signRefreshToken(accessToken: string): Promise<{ refreshToken: string }> {
+    //     const refreshToken = generateToken(accessToken, 'refreshTokenSecret');
+    //     return {
+    //         refreshToken
+    //     };
+    // }
+
     public async saveSession(newSession: Session): Promise<Session> {
-        return await Session.save(newSession);
+        const dataSource = db.getDataSource();
+        return await dataSource.getRepository<Session>(SessionEntity).save(newSession);
     }
 
     public async findSessionByToken(token: string): Promise<Session | null> {
-        return await Session.findOneBy({ accessToken: token });
+        const dataSource = db.getDataSource();
+        return await dataSource.getRepository<Session>(SessionEntity)
+                .createQueryBuilder('session')
+                .where('session.accessToken = :t OR session.refreshToken = :t', { t: token })
+                .getOne();
     }
 
     public async findSessionByUser(id: number): Promise<Session | null> {
-        return await Session.findOneBy({ user: { id: id } });
+        const dataSource = db.getDataSource();
+        return await dataSource.getRepository<Session>(SessionEntity).findOneBy({
+            user: {
+                id: id
+            }
+        });
+    }
+
+    public async revokeSession(session: Session) {
+        session.accessToken = '';
+        session.refreshToken = '';
+        await this.saveSession(session);
     }
 
 }

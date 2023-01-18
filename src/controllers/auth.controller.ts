@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
-import logger from '../utils/logger';
-import config from 'config';
-import { CreateSessionInput } from '../schemas/auth.schema';
+import { logInInput } from '../schemas/auth.schema';
 import UserService from '../services/user.service';
 import AuthService from '../services/auth.service';
-import { get } from 'lodash';
-import { verifyJwt } from '../utils/jwt';
+import { User } from '../entities/user.entity';
+import { Session } from '../entities/session.entity';
+import moment from 'moment';
 
-async function createSessionHandler(req: Request<{}, {}, CreateSessionInput>, res: Response) {
+async function logInHandler(req: Request<{}, {}, logInInput>, res: Response) {
     const { email, password, socialLogin } = req.body;
     const userService = new UserService();
     const authService = new AuthService();
@@ -21,7 +20,7 @@ async function createSessionHandler(req: Request<{}, {}, CreateSessionInput>, re
         });
     }
 
-    // If socialLogin === false, then log user with password
+    // If not socialLogin, then log user with password
     if (!socialLogin) {
         // Check user verified
         if (!user.verified) {
@@ -30,8 +29,8 @@ async function createSessionHandler(req: Request<{}, {}, CreateSessionInput>, re
                 data: ''
             });
         }
-        const isValid = await userService.validatePassword(user, password);
-        if (!isValid) {
+        const passwordIsValid = await userService.validatePassword(user, password);
+        if (!passwordIsValid) {
             return res.status(400).send({
                 message: message,
                 data: ''
@@ -45,44 +44,45 @@ async function createSessionHandler(req: Request<{}, {}, CreateSessionInput>, re
         }
     }
 
-    const accessToken = await authService.signAccessToken(user);
+    // Create token
+    const { accessToken } = await authService.signAccessToken(user);
+    // const { refreshToken } = await authService.signRefreshToken(accessToken);
 
-    // Update user's logged in times
-    user.loggedInTimes += 1;
-    await userService.saveUser(user);
+    // Create session
+    const newSession = new Session();
+    newSession.accessToken = accessToken;
+    // newSession.refreshToken = refreshToken;
+    newSession.lastLoggedIn = moment().toDate();
+    newSession.user = user;
+    await authService.saveSession(newSession);
 
-    // res.cookie('accountSystemAccessToken', accessToken, { signed: true });
-
-    return res
-        .cookie('accessToken', accessToken)
-        .send({
-            message: '',
-            data: {
-                accessToken
-            }
-        })
+    return res.send({
+                message: 'Log in success!',
+                data: {
+                    accessToken,
+                    // refreshToken
+                }
+            })
 }
 
 async function logOutHandler(req: Request, res: Response) {
-    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s/, '');
+    // const accessToken = (req.headers.authorization || '').replace(/^Bearer\s/, '');
+    const user: User = res.locals.user;
     const authService = new AuthService();
-    const findSession = await authService.findSessionByToken(accessToken);
+    const findSession = await authService.findSessionByUser(user.id);
 
     if ( findSession ) {
-        findSession.accessToken = '';
-        await authService.saveSession(findSession);
+        authService.revokeSession(findSession);
         res.locals.user = null;
     }
     
-    return res
-        .clearCookie('accessToken')
-        .send({
-            message: 'Log out success',
-            data: null
-        });
+    return res.send({
+                message: 'Log out success',
+                data: null
+            });
 }
 
 export {
-    createSessionHandler,
+    logInHandler,
     logOutHandler
 };
