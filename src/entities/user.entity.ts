@@ -63,11 +63,11 @@ export const UserEntity = new EntitySchema<User>({
         },
         avatarId: {
             type: 'int',
-            default: 0
+            default: 1
         },
         frameId: {
             type: 'int',
-            default: 0
+            default: 1
         },
         password: {
             type: 'varchar',
