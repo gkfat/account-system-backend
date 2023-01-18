@@ -14,9 +14,11 @@ import UserService, { FetchUsersQuery, FetchUsersResult }  from '../services/use
 import logger from '../utils/logger';
 import AuthService from '../services/auth.service';
 import { verifyToken } from '../utils/jwt';
+import DecoratorService from '../services/decorator.service';
 
 async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Response) {
     const userService = new UserService();
+    const decoratorsService = new DecoratorService();
     const { email, firstName, lastName, password, socialSignUp } = req.body;
     const newUser = new User();
     newUser.email = email;
@@ -25,6 +27,18 @@ async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Res
     newUser.verificationCode = userService.generateVerificationCode();
     newUser.verified = false;
     newUser.loggedInTimes = 0;
+    const decorators = await decoratorsService.findDecorators({
+        ids: [],
+        categoryIds: [],
+        take: 100,
+        page: 1,
+        order: {
+            by: 'id',
+            order: 1
+        }
+    });
+    newUser.avatarId = decorators.data.filter(d => d.categoryId === 0)[0].id;
+    newUser.frameId = decorators.data.filter(d => d.categoryId === 1)[0].id;
 
     let createdUser!: User;
 
