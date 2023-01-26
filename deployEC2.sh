@@ -18,23 +18,23 @@ echo "Remote BIN Location: $REMOTE_BIN"
 echo "Current Commit: $CURRENT_COMMIT"
 
 printf "Stopping remote service\n"
-if ssh -i $CERT_KEY $REMOTE_USER@$REMOTE_SERVER "sudo su; systemctl stop $REMOTE_SERVICE"; then
+if ssh -i $CERT_KEY $REMOTE_USER@$REMOTE_SERVER "sudo systemctl stop $REMOTE_SERVICE"; then
     printf "${GREEN}Stop remote service completed${NC}\n"
 else
     printf "${RED}Stop remote service failed${NC}\n"
     exit 1
 fi
 
-printf "Pulling remote project from git\n"
-if ssh -i $CERT_KEY $REMOTE_USER@$REMOTE_SERVER "sudo su; cd $REMOTE_BIN; git pull; npm i"; then
-    printf "${GREEN}Pull remote project completed${NC}\n"
+echo "Uploading to $REMOTE_SERVER"
+if rsync -e "ssh -i $CERT_KEY" --rsync-path "sudo rsync" -avr $PROJECTPATH/* --exclude ".env" --exclude "node_modules" $REMOTE_USER@$REMOTE_SERVER:$REMOTE_BIN ; then
+    printf "${GREEN}Upload to $REMOTE_SERVER Completed${NC}\n"
 else
-    printf "${RED}Pull remote project failed${NC}\n"
+    printf "${RED}Upload to $REMOTE_SERVER Failed${NC}\n"
     exit 1
 fi
 
 printf "Restarting remote service\n"
-if ssh -i $CERT_KEY $REMOTE_USER@$REMOTE_SERVER "sudo su; systemctl restart $REMOTE_SERVICE"; then
+if ssh -i $CERT_KEY $REMOTE_USER@$REMOTE_SERVER "sudo systemctl restart $REMOTE_SERVICE"; then
     printf "${GREEN}Restart remote service completed${NC}\n"
 else
     printf "${RED}Restart remote service failed${NC}\n"
