@@ -8,6 +8,7 @@ import { object, string, number, TypeOf, array, boolean } from 'zod';
  *          type: object
  *          required:
  *              - title
+ *              - description
  *              - content
  *              - categoryId
  *              - authorId
@@ -15,6 +16,9 @@ import { object, string, number, TypeOf, array, boolean } from 'zod';
  *              title:
  *                  type: string
  *                  default: New post
+ *              description:
+ *                  type: string
+ *                  default: Here are description!
  *              content:
  *                  type: string
  *                  default: Here are contents!
@@ -48,6 +52,9 @@ export const createPostSchema = object({
         title: string({
             required_error: 'Title is required'
         }),
+        description: string({
+            required_error: 'Description is required'
+        }),
         content: string({
             required_error: 'Content is required'
         }),
@@ -71,6 +78,10 @@ export const createPostSchema = object({
  *                  type: integer array
  *                  description: an array of user post id
  *                  default: []
+ *              withContent:
+ *                  type: boolean
+ *                  description: Determine api result includes post's contents or not
+ *                  default: false
  *              categoryIds:
  *                  type: integer array
  *                  description: an array of category id
@@ -114,6 +125,7 @@ export const fetchPostsSchema = object({
     body: object({
         ids: array(number()),
         authorIds: array(number()),
+        withContent: boolean(),
         categoryIds: array(number()),
         page: number(),
         take: number(),
@@ -141,6 +153,8 @@ export const fetchPostsSchema = object({
  *              title:
  *                  type: string
  *                  default: New post
+ *              description:
+ *                  type: string
  *              content:
  *                  type: string
  *                  default: Here are contents!
@@ -173,6 +187,9 @@ export const updatePostSchema = object({
         }),
         title: string({
             required_error: 'Title is required'
+        }),
+        description: string({
+            required_error: 'Description is required'
         }),
         content: string({
             required_error: 'Content is required'

@@ -37,8 +37,13 @@ async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Res
             order: 1
         }
     });
-    newUser.avatarId = decorators.data.filter(d => d.categoryId === 0)[0].id;
-    newUser.frameId = decorators.data.filter(d => d.categoryId === 1)[0].id;
+    if ( decorators.data.length > 0 ) {
+        newUser.avatarId = decorators.data.filter(d => d.categoryId === 0)[0].id;
+        newUser.frameId = decorators.data.filter(d => d.categoryId === 1)[0].id;
+    } else {
+        newUser.avatarId = 0;
+        newUser.frameId = 0;
+    }
 
     let createdUser!: User;
 
@@ -82,7 +87,7 @@ async function createUserHandler(req: Request<{}, {}, CreateUserInput>, res: Res
         createdUser = await userService.saveUser(newUser);
     }
 
-    const result = userService.omitPrivateField(createdUser);
+    const result = await userService.omitField(createdUser, 'private');
     return res.send({
         data: result,
         message: 'Sign up success!'
@@ -169,7 +174,7 @@ async function fetchUsersHandler(req: Request<{}, {}, FetchUsersInput>, res: Res
     const query: FetchUsersQuery = req.body;
     const result: FetchUsersResult = await userService.findUsers(query);
     return res.send({
-        message: '',
+        message: 'Fetch users success!',
         data: result
     });
 }

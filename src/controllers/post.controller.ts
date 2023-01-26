@@ -9,7 +9,7 @@ import PostService, { FetchPostsQuery, FetchPostsResult } from '../services/post
 import UserService from '../services/user.service';
 
 async function createPostHandler(req: Request<{}, {}, CreatePostInput>, res: Response) {
-    const { title, content, authorId, categoryId } = req.body;
+    const { title, content, description, authorId, categoryId } = req.body;
     const postService = new PostService();
     const userService = new UserService();
 
@@ -32,6 +32,7 @@ async function createPostHandler(req: Request<{}, {}, CreatePostInput>, res: Res
     const newPost = new Post();
     newPost.title = title;
     newPost.content = content;
+    newPost.description = description;
     newPost.categoryId = categoryId;
     newPost.author = findUser;
 
@@ -44,7 +45,7 @@ async function createPostHandler(req: Request<{}, {}, CreatePostInput>, res: Res
 }
 
 async function updatePostHandler(req: Request<{}, {}, UpdatePostInput>, res: Response) {
-    const { id, title, content, categoryId } = req.body;
+    const { id, title, description, content, categoryId } = req.body;
     const postService = new PostService();
 
     const findPost = await postService.findPostById(id);
@@ -57,7 +58,7 @@ async function updatePostHandler(req: Request<{}, {}, UpdatePostInput>, res: Res
     }
 
     // Users can only edit theirs own posts
-    const user = res.locals.user;
+    const user = res.locals.user.payload;
     if (findPost.author.id !== user.id) {
         return res.status(400).send({
             data: null,
@@ -66,6 +67,7 @@ async function updatePostHandler(req: Request<{}, {}, UpdatePostInput>, res: Res
     }
 
     findPost.title = title;
+    findPost.description = description;
     findPost.content = content;
     findPost.categoryId = categoryId;
     await postService.savePost(findPost);

@@ -10,6 +10,8 @@ import db from '../utils/connectToDb';
 import { User } from '../entities/user.entity';
 import { omit } from 'lodash';
 import { Session } from '../entities/session.entity';
+import { In } from 'typeorm';
+import DecoratorService, { FetchDecoratorsQuery, FetchDecoratorsResult } from './decorator.service';
 
 export type FetchUsersQuery = {
     ids: number[];
@@ -32,14 +34,13 @@ export default class UserService {
         return await argon2.hash(password);
     }
 
-    public omitPrivateField(user: User): User {
-        const partialUser = omit<{[key: string]: any}>(user, privateFields);
+    public async omitField(user: User, type: 'private' | 'public'): Promise<User> {
+        const field = type === 'private' ? privateFields.private : privateFields.public;
+        const partialUser = omit<{[key: string]: any}>(user, field);
         const keys = Object.keys(partialUser);
-        const result = new User();
-        keys.forEach(key => {
-            result[key] = partialUser[key];
-        })
-        return result;
+        const omitUser = new User();
+        keys.forEach(key => omitUser[key] = partialUser[key]);
+        return omitUser;
     }
 
     public generateVerificationCode(): string {
@@ -114,7 +115,7 @@ export default class UserService {
         const skip = (page-1) * take;
         const dataSource = db.getDataSource();
         let where: object[] = [];
-        where = query.ids.length > 0 ? [...where, { id: query.ids }] : where;
+        where = query.ids.length > 0 ? [...where, { id: In(query.ids) }] : where;
 
         const queryResult = await dataSource.createQueryBuilder(UserEntity, 'user')
                                     .take(take)
@@ -124,7 +125,9 @@ export default class UserService {
                                     .getManyAndCount();
 
         // Omit user's private fields
-        queryResult[0].map(user => this.omitPrivateField(user));
+        queryResult[0].forEach(async (user, i) => {
+            queryResult[0][i] = await this.omitField(user, 'public');
+        });
 
         return {
             data: queryResult[0],

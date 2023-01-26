@@ -1,12 +1,23 @@
+import { Decorator } from './decorator.entity';
 import { Session } from './session.entity';
 import { EntitySchema, EntitySchemaRelationOptions } from 'typeorm';
 import { BaseSchema } from './base.entity';
 
-export const privateFields = [
-    'password',
-    'resetPasswordCode',
-    'verificationCode'
-];
+export const privateFields = {
+    private: [
+        'password',
+        'resetPasswordCode',
+        'verificationCode'
+    ],
+    public: [
+        'email',
+        'firstName',
+        'lastName',
+        'password',
+        'resetPasswordCode',
+        'verificationCode'
+    ]
+}
 
 export class User {
     [key: string]: any;

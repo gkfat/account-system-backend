@@ -1,15 +1,14 @@
-import { JwtPayload } from 'jsonwebtoken';
-import { privateFields } from '../entities/user.entity';
 import { Session, SessionEntity } from '../entities/session.entity';
 import { User } from '../entities/user.entity';
 import { generateToken, verifyToken } from '../utils/jwt';
-import { omit } from 'lodash';
 import db from '../utils/connectToDb';
+import UserService from './user.service';
 
 export default class AuthService {
 
     public async signAccessToken(user: User): Promise<{ accessToken: string }> {
-        const omitUser = omit(user, privateFields);
+        const userService = new UserService();
+        const omitUser = await userService.omitField(user, 'private');
         const accessToken = generateToken(omitUser, 'accessTokenSecret');
         return {
             accessToken

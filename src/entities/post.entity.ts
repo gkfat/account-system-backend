@@ -7,6 +7,7 @@ export class Post {
     [key: string]: any;
     
     title!: string;
+    description!: string;
     content!: string;
     categoryId!: number;
     author!: User;
@@ -19,6 +20,10 @@ export const PostEntity = new EntitySchema<Post>({
         title: {
             type: 'varchar',
             length: 100
+        },
+        description: {
+            type: 'varchar',
+            length: 150
         },
         content: {
             type: 'longtext',

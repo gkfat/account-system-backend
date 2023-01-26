@@ -1,7 +1,7 @@
 import { Decorator, DecoratorEntity } from './../entities/decorator.entity';
 import db from '../utils/connectToDb';
 import UserService, { FetchUsersQuery } from './user.service';
-import { UpdateResult } from 'typeorm';
+import { In, UpdateResult } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 
 export type FetchDecoratorsQuery = {
@@ -48,8 +48,8 @@ export default class DecoratorService {
         const userService = new UserService();
 
         let where: object[] = [];
-        where = query.ids.length > 0 ? [...where, { id: query.ids }] : where;
-        where = query.categoryIds.length > 0 ? [...where, { categoryId: query.categoryIds }] : where;
+        where = query.ids.length > 0 ? [...where, { id: In(query.ids) }] : where;
+        where = query.categoryIds.length > 0 ? [...where, { categoryId: In(query.categoryIds) }] : where;
 
         const queryResult = await dataSource.createQueryBuilder(DecoratorEntity, 'decorator')
                                     .take(take)

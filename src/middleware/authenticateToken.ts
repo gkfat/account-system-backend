@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import AuthService from '../services/auth.service';
-import { generateToken, verifyToken } from '../utils/jwt';
+import { verifyToken } from '../utils/jwt';
 
 async function authenticateToken(req: Request, res: Response, next: NextFunction) {
     const accessToken = (req.headers.authorization || '').replace(/^Bearer\s/, '');
