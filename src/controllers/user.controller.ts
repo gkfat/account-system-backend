@@ -250,6 +250,13 @@ async function updateUserHandler(req: Request<{}, {}, UpdateUserInput>, res: Res
 
     // Sign a new token with updated user data
     const { accessToken } = await authService.signAccessToken(updatedUser);
+    
+    // Update session token
+    const findSession = await authService.findSessionByUser(findUser.id);
+    if (findSession) {
+        findSession.accessToken = accessToken;
+        await authService.saveSession(findSession);
+    }
 
     return res.send({
         message: 'Update user success!',

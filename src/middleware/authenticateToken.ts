@@ -10,6 +10,13 @@ async function authenticateToken(req: Request, res: Response, next: NextFunction
         return next();
     }
 
+    const findSession = await authService.findSessionByToken(accessToken);
+
+    if (!findSession) {
+        res.locals.user = null;
+        return next();
+    }
+
     // If accessToken not expired, return decoded data
     const { payload, expired } = verifyToken(accessToken, 'accessTokenSecret');
     if (payload) {

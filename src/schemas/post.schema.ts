@@ -200,7 +200,31 @@ export const updatePostSchema = object({
     })
 });
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *      DeletePostInput:
+ *          type: object
+ *          required:
+ *              - id
+ *          properties:
+ *              id:
+ *                  type: number
+ *      DeletePostResponse:
+ *          type: object
+ *          properties:
+ */
+export const deletePostSchema = object({
+    body: object({
+        id: number({
+            required_error: 'Id is required'
+        })
+    })
+});
+
 
 export type CreatePostInput = TypeOf<typeof createPostSchema>['body'];
 export type FetchPostsInput = TypeOf<typeof fetchPostsSchema>['body'];
 export type UpdatePostInput = TypeOf<typeof updatePostSchema>['body'];
+export type DeletePostInput = TypeOf<typeof deletePostSchema>['body'];

@@ -37,17 +37,21 @@ export default class AuthService {
 
     public async findSessionByUser(id: number): Promise<Session | null> {
         const dataSource = db.getDataSource();
-        return await dataSource.getRepository<Session>(SessionEntity).findOneBy({
-            user: {
-                id: id
-            }
-        });
+        return await dataSource.getRepository<Session>(SessionEntity)
+                .createQueryBuilder('session')
+                .where('session.userId = :id', { id: id })
+                .orderBy('session.id', 'DESC')
+                .getOne();
     }
 
     public async revokeSession(session: Session) {
-        session.accessToken = '';
-        session.refreshToken = '';
-        await this.saveSession(session);
+        const dataSource = db.getDataSource();
+        await dataSource.getRepository<Session>(SessionEntity).update({
+            id: session.id
+        }, {
+            accessToken: '',
+            refreshToken: ''
+        });
     }
 
 }

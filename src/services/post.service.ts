@@ -1,7 +1,7 @@
 import db from '../utils/connectToDb';
 import { Post, PostEntity } from '../entities/post.entity';
 import UserService from './user.service';
-import { In } from 'typeorm';
+import { In, UpdateResult } from 'typeorm';
 
 export type FetchPostsQuery = {
     ids: number[];
@@ -67,5 +67,12 @@ export default class PostService {
             data: queryResult[0],
             count: queryResult[1]
         }
+    }
+
+    public async deletePostById(id: number): Promise<UpdateResult> {
+        const dataSource = db.getDataSource();
+        return await dataSource.getRepository<Post>(PostEntity).softDelete({
+            id: id
+        })
     }
 }

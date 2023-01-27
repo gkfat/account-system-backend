@@ -1,7 +1,8 @@
 import {
     CreatePostInput,
     UpdatePostInput,
-    FetchPostsInput
+    FetchPostsInput,
+    DeletePostInput
 } from '../schemas/post.schema';
 import { Request, Response } from 'express';
 import { Post } from '../entities/post.entity';
@@ -57,7 +58,7 @@ async function updatePostHandler(req: Request<{}, {}, UpdatePostInput>, res: Res
         });
     }
 
-    // Users can only edit theirs own posts
+    // Users can only edit their own posts
     const user = res.locals.user.payload;
     if (findPost.author.id !== user.id) {
         return res.status(400).send({
@@ -88,8 +89,39 @@ async function fetchPostsHandler(req: Request<{}, {}, FetchPostsInput>, res: Res
     });
 }
 
+async function deletePostHandler(req: Request<{}, {}, DeletePostInput>, res: Response) {
+    const { id } = req.body;
+    const postService = new PostService();
+
+    const findPost = await postService.findPostById(id);
+
+    if (!findPost) {
+        return res.status(400).send({
+            data: null,
+            message: 'Post not created!'
+        });
+    }
+
+    // Users can only delete their own posts
+    const user = res.locals.user.payload;
+    if (findPost.author.id !== user.id) {
+        return res.status(400).send({
+            data: null,
+            message: 'User mismatch the author!'
+        });
+    }
+
+    await postService.deletePostById(findPost.id);
+
+    return res.send({
+        data: null,
+        message: 'Delete post success!'
+    });
+}
+
 export {
     createPostHandler,
     updatePostHandler,
-    fetchPostsHandler
+    fetchPostsHandler,
+    deletePostHandler
 };

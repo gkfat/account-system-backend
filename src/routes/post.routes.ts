@@ -1,14 +1,16 @@
 import {
     createPostSchema,
     fetchPostsSchema,
-    updatePostSchema
+    updatePostSchema,
+    deletePostSchema
 } from '../schemas/post.schema';
 import express from 'express';
 import validateResource from '../middleware/validateResource';
 import {
     createPostHandler,
     updatePostHandler,
-    fetchPostsHandler
+    fetchPostsHandler,
+    deletePostHandler
 } from '../controllers/post.controller';
 import requireUser from '../middleware/requireUser';
 
@@ -80,6 +82,30 @@ router.put(
 /**
  * @openapi
  * /posts/fetch:
+ *  post:
+ *      tags:
+ *          - Post
+ *      summary: Delete a post
+ *      responses:
+ *          200:
+ *              description: Success
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/DeletePostResponse'
+ *          400:
+ *              description: Bad request
+ *
+ */
+router.post(
+    '/posts/delete',
+    validateResource(deletePostSchema),
+    deletePostHandler
+)
+
+/**
+ * @openapi
+ * /posts/delete:
  *  get:
  *      tags:
  *          - Post

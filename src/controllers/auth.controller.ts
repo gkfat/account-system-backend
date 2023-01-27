@@ -67,12 +67,12 @@ async function logInHandler(req: Request<{}, {}, logInInput>, res: Response) {
 
 async function logOutHandler(req: Request, res: Response) {
     // const accessToken = (req.headers.authorization || '').replace(/^Bearer\s/, '');
-    const user: User = res.locals.user;
+    const user: User = res.locals.user.payload;
     const authService = new AuthService();
     const findSession = await authService.findSessionByUser(user.id);
 
     if ( findSession ) {
-        authService.revokeSession(findSession);
+        await authService.revokeSession(findSession);
         res.locals.user = null;
     }
     
