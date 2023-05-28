@@ -99,6 +99,7 @@ router.put(
  */
 router.post(
     '/posts/delete',
+    requireUser,
     validateResource(deletePostSchema),
     deletePostHandler
 )
